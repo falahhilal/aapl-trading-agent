@@ -15,10 +15,6 @@ __pycache__/
 # VS Code settings
 .vscode/
 
-# Environment variables / API keys
-.env
-secrets.py
-
 # Jupyter
 .ipynb_checkpoints/
 
