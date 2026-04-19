@@ -96,6 +96,39 @@ def add_price_features(df):
 
     return df
 
+def merge_vix(df):
+    """
+    Merges VIX data into the main price DataFrame.
+    Adds two columns:
+      vix_close  — raw VIX closing value
+      vix_change — daily % change in VIX
+    High vix_close (>30) = high market fear
+    High vix_change       = fear is increasing fast
+    """
+    VIX_PATH = os.path.join(config.RAW_DIR, "vix_raw.csv")
+
+    if not os.path.exists(VIX_PATH):
+        print("[preprocessor] VIX file not found. Skipping.")
+        df["vix_close"]  = 20.0   # neutral fallback value
+        df["vix_change"] = 0.0
+        return df
+
+    print("[preprocessor] Merging VIX data...")
+
+    vix = pd.read_csv(VIX_PATH, index_col="Date", parse_dates=True)
+    vix.index = pd.to_datetime(vix.index).normalize()
+    vix["vix_change"] = vix["vix_close"].pct_change()
+
+    df = df.join(vix[["vix_close", "vix_change"]], how="left")
+
+    # Forward fill any missing VIX days (holidays etc.)
+    df["vix_close"]  = df["vix_close"].ffill().fillna(20.0)
+    df["vix_change"] = df["vix_change"].ffill().fillna(0.0)
+
+    print(f"[preprocessor] VIX merged. Range: {df['vix_close'].min():.1f} – {df['vix_close'].max():.1f}")
+    print(f"[preprocessor]   VIX > 30 (high fear) days: {(df['vix_close'] > 30).sum()}")
+
+    return df
 
 def generate_labels(df):
     """
@@ -150,22 +183,18 @@ def save_preprocessed(df):
 
 
 def run_preprocessing():
-    """
-    Runs the full preprocessing pipeline.
-    Returns the final preprocessed DataFrame.
-    """
     print("\n" + "="*55)
     print("PHASE 1 — PREPROCESSING")
     print("="*55)
 
     df = load_price_data()
     df = add_price_features(df)
+    df = merge_vix(df)             
     df = generate_labels(df)
 
     save_preprocessed(df)
 
     print("\n[preprocessor] Preprocessing complete. Ready for Phase 2.")
-
     return df
 
 if __name__ == "__main__":
