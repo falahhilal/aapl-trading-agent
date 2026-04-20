@@ -11,7 +11,6 @@ files = [
     "data/preprocessor.py",
     "features/__init__.py",
     "features/technical.py",
-    "features/sentiment.py",
     "agent/__init__.py",
     "agent/classifier.py",
     "agent/heuristic.py",
