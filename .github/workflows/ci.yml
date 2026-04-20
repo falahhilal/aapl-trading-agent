@@ -1,0 +1,83 @@
+# .github/workflows/ci.yml
+# Runs on every push to production-api branch.
+# Builds the Docker image and runs a smoke test to verify
+# the API starts and responds correctly
+
+name: CI — Build and Test
+
+on:
+  push:
+    branches: [production-api]
+  pull_request:
+    branches: [production-api]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1 — Check out the code
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Step 2 — Build the Docker image
+      - name: Build Docker image
+        run: |
+          docker build -t aapl-trading-agent .
+
+      # Step 3 — Run the container in background
+      - name: Start container
+        run: |
+          docker run -d \
+            --name aapl-agent \
+            -p 8000:8000 \
+            aapl-trading-agent
+          echo "Container started"
+
+      # Step 4 — Wait for API to be ready
+      - name: Wait for API to start
+        run: |
+          echo "Waiting for API..."
+          for i in {1..30}; do
+            if curl -s http://localhost:8000/ > /dev/null; then
+              echo "API is up"
+              break
+            fi
+            echo "Attempt $i — not ready yet, waiting 2s..."
+            sleep 2
+          done
+
+      # Step 5 — Smoke tests
+      - name: Test root endpoint
+        run: |
+          response=$(curl -s http://localhost:8000/)
+          echo "Response: $response"
+          echo $response | grep -q "running" && echo "PASS" || (echo "FAIL" && exit 1)
+
+      - name: Test predict endpoint
+        run: |
+          response=$(curl -s http://localhost:8000/predict/2024-01-05)
+          echo "Response: $response"
+          echo $response | grep -q "action" && echo "PASS" || (echo "FAIL" && exit 1)
+
+      - name: Test backtest endpoint
+        run: |
+          response=$(curl -s http://localhost:8000/backtest)
+          echo "Response: $response"
+          echo $response | grep -q "total_return" && echo "PASS" || (echo "FAIL" && exit 1)
+
+      - name: Test trades endpoint
+        run: |
+          response=$(curl -s http://localhost:8000/trades)
+          echo "Response: $response"
+          echo $response | grep -q "entry_date" && echo "PASS" || (echo "FAIL" && exit 1)
+
+      # Step 6 — Print container logs if anything failed
+      - name: Print container logs
+        if: failure()
+        run: docker logs aapl-agent
+
+      # Step 7 — Stop container
+      - name: Stop container
+        if: always()
+        run: docker stop aapl-agent
