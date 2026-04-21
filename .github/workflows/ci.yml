@@ -1,5 +1,5 @@
 # .github/workflows/ci.yml
-# CI/CD Pipeline — Build, Test, and Deploy
+# CI/CD Pipeline 
 
 name: CI/CD — Build, Test and Deploy
 
