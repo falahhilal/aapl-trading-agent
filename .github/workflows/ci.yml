@@ -7,9 +7,9 @@ name: CI — Build and Test
 
 on:
   push:
-    branches: [production-api]
+    branches: [main]
   pull_request:
-    branches: [production-api]
+    branches: [main]
 
 jobs:
   build-and-test:
