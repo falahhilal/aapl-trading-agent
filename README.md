@@ -10,19 +10,21 @@ The agent observes daily market conditions and autonomously decides whether to
 ---
 
 ## What it does
-Real AAPL market data (2015–2024)
-↓
-Feature engineering — 32 technical indicators + VIX macro feature
-↓
-MLP classifier predicts UP / DOWN / NEUTRAL for next trading day
-↓
-Heuristic agent filters by confidence threshold, RSI, and VIX
-↓
-BUY / SELL / HOLD decision with reasoning
-↓
-Backtesting simulation — $10,000 virtual capital, 0.1% transaction cost
-↓
+
+Real AAPL market data (2015–2024)  
+↓  
+Feature engineering — 32 technical indicators + VIX macro feature  
+↓  
+MLP classifier predicts UP / DOWN / NEUTRAL for next trading day  
+↓  
+Heuristic agent filters by confidence threshold, RSI, and VIX  
+↓  
+Generates BUY / SELL / HOLD decision with reasoning  
+↓  
+Backtesting simulation — $10,000 virtual capital, 0.1% transaction cost  
+↓  
 Results compared against passive Buy-and-Hold baseline
+
 ---
 
 ## Results
@@ -84,32 +86,44 @@ Walk-forward validation across 5 years (2019–2023) achieved mean F1 of 0.318.
 
 ---
 
-## Project structure
+## Project Structure
+
+```
 aapl-trading-agent/
-├── data/
-│   ├── collector.py       # downloads AAPL + VIX from Yahoo Finance
-│   └── preprocessor.py    # cleans data, merges VIX, generates labels
-├── features/
-│   └── technical.py       # engineers 32 features from scratch
-├── agent/
-│   ├── classifier.py      # trains 5 ML models, walk-forward validation
-│   ├── heuristic.py       # TradingAgent class — stateful decision logic
-│   └── backtester.py      # portfolio simulation with transaction costs
-├── evaluation/
-│   └── metrics.py         # Sharpe ratio, drawdown, equity curve plots
-├── raw_data/              # auto-created, gitignored
-├── outputs/               # plots and results
-├── models/                # trained model saved here
+│
 ├── app.py                 # Streamlit frontend
 ├── api.py                 # FastAPI backend
-├── predict.py             # lightweight inference module
-├── config.py              # all settings in one place
-├── main.py                # runs full pipeline end to end
-├── Dockerfile             # containerizes the API
+├── main.py                # Runs full pipeline end-to-end
+├── predict.py             # Lightweight inference module
+├── config.py              # Centralized configuration
+│
+├── data/                  # Data collection & preprocessing
+│   ├── collector.py
+│   └── preprocessor.py
+│
+├── features/              # Feature engineering
+│   └── technical.py
+│
+├── agent/                 # Core trading logic
+│   ├── classifier.py
+│   ├── heuristic.py
+│   └── backtester.py
+│
+├── evaluation/            # Performance metrics & plots
+│   └── metrics.py
+│
+├── models/                # Saved trained models
+├── outputs/               # Generated plots/results
+├── raw_data/              # Raw datasets (gitignored)
+│
+├── .github/
+│   └── workflows/
+│       └── ci.yml         # CI/CD pipeline
+│
+├── Dockerfile
 ├── requirements.txt
-└── .github/
-└── workflows/
-└── ci.yml         # CI/CD — build, test, deploy on every push
+└── README.md
+```
 ---
 
 ## Setup & run locally
