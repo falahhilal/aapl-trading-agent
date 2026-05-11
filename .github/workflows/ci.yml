@@ -8,6 +8,10 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+  schedule:
+    # Runs every day at 9:00 AM UTC (2:00 PM Pakistan time)
+    # This keeps the repo active and the Render deployment warm
+    - cron: '0 9 * * 1-5'    # weekdays only — Monday to Friday
 
 jobs:
   build-and-test:
@@ -82,3 +86,15 @@ jobs:
       - name: Trigger Render Deploy
         run: |
           curl -X POST "${{ secrets.RENDER_DEPLOY_HOOK }}"
+
+  keep-alive:
+    runs-on: ubuntu-latest
+    needs: build-and-test
+
+    steps:
+      - name: Ping Render API
+        run: |
+          echo "Pinging Render to keep it warm..."
+          curl -s https://aapl-trading-agent.onrender.com/ || true
+          curl -s https://aapl-trading-agent.onrender.com/backtest || true
+          echo "Render pinged successfully"

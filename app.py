@@ -153,28 +153,31 @@ st.divider()
 # SECTION 1 — LIVE PREDICTION=
 
 st.header("🔴 Live Prediction")
-st.markdown("Fetches today's real market data and runs the agent right now.")
+st.markdown("Today's real-time BUY/SELL/HOLD decision based on live market data.")
 
 col1, col2 = st.columns([1, 2])
 
 with col1:
-    if st.button("Get Today's Prediction", type="primary", use_container_width=True):
-        with st.spinner("Fetching live market data..."):
-            result, error = get_live_prediction()
+    with st.spinner("Fetching live market data..."):
+        result, error = get_live_prediction()
 
-        if error:
-            st.error(f"Error: {error}")
-        elif result:
-            action = result["action"]
-            emoji  = action_color(action)
+    if error:
+        st.error(f"Error: {error}")
+    elif result:
+        action = result["action"]
+        emoji  = action_color(action)
 
-            st.markdown(f"### {emoji} {action}")
-            st.metric("Date",        result["date"])
-            st.metric("AAPL Close",  f"${result['close_price']}")
-            st.metric("Confidence",  f"{result['confidence']*100:.1f}%")
-            st.metric("RSI",         f"{result['rsi']:.1f}")
-            st.metric("VIX",         f"{result['vix']:.1f}")
-            st.caption(f"Reason: {result['reason']}")
+        st.markdown(f"### {emoji} {action}")
+        st.metric("Date",        result["date"])
+        st.metric("AAPL Close",  f"${result['close_price']}")
+        st.metric("Confidence",  f"{result['confidence']*100:.1f}%")
+        st.metric("RSI",         f"{result['rsi']:.1f}")
+        st.metric("VIX",         f"{result['vix']:.1f}")
+        st.caption(f"Reason: {result['reason']}")
+
+    # Manual refresh button still available
+    if st.button("🔄 Refresh Prediction", use_container_width=True):
+        st.rerun()
 
 with col2:
     st.info("""
@@ -191,6 +194,7 @@ with col2:
     """)
 
 st.divider()
+
 
 # SECTION 2 — HISTORICAL LOOKUP
 
